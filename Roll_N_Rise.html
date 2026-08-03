@@ -629,51 +629,25 @@ function playSystemPing() {
   playTone(ctx, 880, 0.1, 'triangle', 0.07, 0.09);
 }
 
-function playNoiseBurst(ctx, duration, volume, highpassHz, offset = 0) {
-  const sampleCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
-  const noiseBuffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
-  const channel = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < sampleCount; i++) {
-    channel[i] = (Math.random() * 2 - 1) * 0.9;
-  }
-
-  const source = ctx.createBufferSource();
-  const filter = ctx.createBiquadFilter();
-  const gain = ctx.createGain();
-  const startAt = ctx.currentTime + offset;
-  const stopAt = startAt + duration;
-
-  source.buffer = noiseBuffer;
-  filter.type = 'highpass';
-  filter.frequency.setValueAtTime(highpassHz, startAt);
-
-  gain.gain.setValueAtTime(0.0001, startAt);
-  gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
-
-  source.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-  source.start(startAt);
-  source.stop(stopAt + 0.02);
-}
-
 function playDiceRollTick(step) {
   if (!soundEnabled) return;
   const ctx = ensureAudioContext();
   if (!ctx) return;
-  const base = 420 + ((step % 5) * 30);
-  playNoiseBurst(ctx, 0.04, 0.14, 700, 0);
-  playTone(ctx, base, 0.025, 'square', 0.06, 0.004);
+  const base = 520 + ((step % 5) * 38);
+  playTone(ctx, base, 0.03, 'triangle', 0.055, 0);
+  playTone(ctx, base * 0.72, 0.022, 'square', 0.045, 0.012);
+  if (step % 3 === 0) {
+    playTone(ctx, base * 1.35, 0.015, 'sine', 0.03, 0.02);
+  }
 }
 
 function playDiceLand() {
   if (!soundEnabled) return;
   const ctx = ensureAudioContext();
   if (!ctx) return;
-  playNoiseBurst(ctx, 0.06, 0.12, 500, 0);
-  playTone(ctx, 210, 0.07, 'triangle', 0.095, 0);
-  playTone(ctx, 150, 0.1, 'triangle', 0.075, 0.045);
+  playTone(ctx, 260, 0.06, 'triangle', 0.09, 0);
+  playTone(ctx, 390, 0.03, 'square', 0.045, 0.02);
+  playTone(ctx, 195, 0.08, 'sine', 0.07, 0.045);
 }
 
 soundBtn.addEventListener('click', async () => {
@@ -957,9 +931,9 @@ function showWinner(player) {
   document.body.appendChild(overlay);
 }
 
-rollBtn.addEventListener('click', () => {
+rollBtn.addEventListener('click', async () => {
   if (gameOver) return;
-  ensureAudioContext();
+  await unlockAudioFromGesture();
   rollBtn.disabled = true;
   const player = players[currentPlayerIndex];
 
@@ -967,7 +941,7 @@ rollBtn.addEventListener('click', () => {
   const rollInterval = setInterval(() => {
     diceDiv.textContent = Math.ceil(Math.random() * 6);
     rollCount++;
-    if (rollCount % 2 === 0) playDiceRollTick(rollCount);
+    playDiceRollTick(rollCount);
     if (rollCount > 8) {
       clearInterval(rollInterval);
       const roll = Math.ceil(Math.random() * 6);
