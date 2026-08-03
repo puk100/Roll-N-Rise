@@ -629,20 +629,51 @@ function playSystemPing() {
   playTone(ctx, 880, 0.1, 'triangle', 0.07, 0.09);
 }
 
+function playNoiseBurst(ctx, duration, volume, highpassHz, offset = 0) {
+  const sampleCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
+  const noiseBuffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
+  const channel = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < sampleCount; i++) {
+    channel[i] = (Math.random() * 2 - 1) * 0.9;
+  }
+
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  const startAt = ctx.currentTime + offset;
+  const stopAt = startAt + duration;
+
+  source.buffer = noiseBuffer;
+  filter.type = 'highpass';
+  filter.frequency.setValueAtTime(highpassHz, startAt);
+
+  gain.gain.setValueAtTime(0.0001, startAt);
+  gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  source.start(startAt);
+  source.stop(stopAt + 0.02);
+}
+
 function playDiceRollTick(step) {
   if (!soundEnabled) return;
   const ctx = ensureAudioContext();
   if (!ctx) return;
-  const base = 300 + ((step % 4) * 25);
-  playTone(ctx, base, 0.03, 'square', 0.045, 0);
+  const base = 420 + ((step % 5) * 30);
+  playNoiseBurst(ctx, 0.04, 0.14, 700, 0);
+  playTone(ctx, base, 0.025, 'square', 0.06, 0.004);
 }
 
 function playDiceLand() {
   if (!soundEnabled) return;
   const ctx = ensureAudioContext();
   if (!ctx) return;
-  playTone(ctx, 240, 0.05, 'triangle', 0.07, 0);
-  playTone(ctx, 180, 0.07, 'triangle', 0.06, 0.04);
+  playNoiseBurst(ctx, 0.06, 0.12, 500, 0);
+  playTone(ctx, 210, 0.07, 'triangle', 0.095, 0);
+  playTone(ctx, 150, 0.1, 'triangle', 0.075, 0.045);
 }
 
 soundBtn.addEventListener('click', async () => {
