@@ -140,6 +140,14 @@
     transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
     box-shadow: 0 12px 24px rgba(63, 91, 215, 0.28);
   }
+  .btn.secondary-btn {
+    margin-top: 0;
+    background: linear-gradient(180deg, #6b7280, #4b5563);
+    box-shadow: 0 10px 20px rgba(31, 41, 55, 0.28);
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 12px;
+  }
   #setup button:hover, .btn:hover {
     transform: translateY(-1px);
     filter: brightness(1.02);
@@ -153,10 +161,42 @@
     align-items:center;
     margin-top:10px;
   }
-  .player-name-row .color-swatch {
-    width: 18px; height: 18px; border-radius:50%; flex: 0 0 auto;
-    border: 2px solid rgba(255,255,255,0.75);
-    box-shadow: 0 4px 10px rgba(16, 24, 40, 0.15);
+  .player-name-row select.color-select {
+    flex: 0 0 140px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 116, 139, 0.28);
+    background: rgba(255,255,255,0.95);
+    color: #1f2937;
+  }
+  .player-name-row .pin-marker {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 18px rgba(16, 24, 40, 0.18);
+    border: 2px solid rgba(255,255,255,0.9);
+    position: relative;
+  }
+  .player-name-row .pin-marker::after {
+    content: '';
+    position: absolute;
+    inset: 10px 10px 9px 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.16);
+  }
+  .player-name-row .pin-marker span {
+    transform: rotate(45deg);
+    line-height: 1;
+    position: relative;
+    z-index: 1;
   }
   .player-name-row input[type="text"] {
     flex: 1 1 auto;
@@ -174,14 +214,10 @@
     box-shadow: 0 0 0 4px rgba(91, 124, 250, 0.16);
     transform: translateY(-1px);
   }
-  .player-name-row select.char-select {
-    flex: 0 0 74px;
-    padding: 10px 6px;
-    font-size: 18px;
-    border-radius: 14px;
-    border: 1px solid rgba(100, 116, 139, 0.24);
-    text-align: center;
-    background: rgba(255,255,255,0.94);
+  .player-name-row select.color-select:focus {
+    outline: none;
+    border-color: rgba(91, 124, 250, 0.65);
+    box-shadow: 0 0 0 4px rgba(91, 124, 250, 0.16);
   }
 
   #game {
@@ -255,6 +291,33 @@
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.28));
     transition: transform 0.15s ease;
   }
+  .token.pin-token {
+    width: 18px;
+    height: 18px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: inline-grid;
+    place-items: center;
+    position: relative;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.85);
+  }
+  .token.pin-token::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+  }
+  .token.pin-token span {
+    transform: rotate(45deg);
+    position: relative;
+    z-index: 1;
+    line-height: 1;
+  }
   .token.hop {
     animation: hopBounce 0.22s ease;
   }
@@ -277,6 +340,11 @@
     width: 100%;
     max-width: 560px;
     border: 1px solid rgba(255,255,255,0.55);
+  }
+  #audioRow {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
   }
   #turnInfo {
     font-size: 18px;
@@ -405,6 +473,9 @@
   <div id="board"></div>
 
   <div id="controls">
+    <div id="audioRow">
+      <button class="btn secondary-btn" id="soundBtn" type="button">Sound: On</button>
+    </div>
     <div id="turnInfo"></div>
     <div id="dice">?</div>
     <button class="btn" id="rollBtn">Roll Dice</button>
@@ -414,9 +485,21 @@
 </div>
 
 <script>
-const PLAYER_COLORS = ['#e03131', '#1971c2', '#2f9e44', '#f08c00'];
+const PLAYER_COLOR_OPTIONS = [
+  { name: 'Ruby Red', value: '#e03131' },
+  { name: 'Ocean Blue', value: '#1971c2' },
+  { name: 'Forest Green', value: '#2f9e44' },
+  { name: 'Amber Orange', value: '#f08c00' },
+  { name: 'Royal Purple', value: '#7b2cbf' },
+  { name: 'Teal', value: '#0f766e' }
+];
+const PLAYER_SOUND_PROFILES = [
+  { wave: 'sine', base: 392 },
+  { wave: 'triangle', base: 440 },
+  { wave: 'square', base: 494 },
+  { wave: 'sawtooth', base: 523 }
+];
 const PLAYER_NAMES_DEFAULT = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
-const CHARACTERS = ['🧑‍🚀','🧑‍🎨','🧑‍💻','🧑‍🔬','🧑‍🍳','🧑‍✈️','🧑‍🏫','🧑‍🔧'];
 
 const TILE_TYPES = ['normal','blue','normal','normal','normal','yellow','yellow','purple','normal','red',
 'normal','normal','red','normal','normal','yellow','blue','normal','blue','green',
@@ -438,6 +521,8 @@ let players = [];
 let currentPlayerIndex = 0;
 let gameOver = false;
 let playMode = 'friends';
+let audioCtx = null;
+let soundEnabled = true;
 
 const landingScreen = document.getElementById('landingScreen');
 const modeScreen = document.getElementById('modeScreen');
@@ -452,25 +537,133 @@ const boardDiv = document.getElementById('board');
 const turnInfo = document.getElementById('turnInfo');
 const diceDiv = document.getElementById('dice');
 const rollBtn = document.getElementById('rollBtn');
+const soundBtn = document.getElementById('soundBtn');
 const logDiv = document.getElementById('log');
 const powerPopup = document.getElementById('powerPopup');
+
+function ensureAudioContext() {
+  if (!window.AudioContext && !window.webkitAudioContext) return null;
+  if (!audioCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new Ctx();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+async function unlockAudioFromGesture() {
+  const ctx = ensureAudioContext();
+  if (!ctx) return false;
+  if (ctx.state === 'suspended') {
+    try {
+      await ctx.resume();
+    } catch {
+      return false;
+    }
+  }
+  return ctx.state === 'running';
+}
+
+function playTone(ctx, frequency, duration, wave, volume, offset = 0) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const startAt = ctx.currentTime + offset;
+  const stopAt = startAt + duration;
+
+  osc.type = wave;
+  osc.frequency.setValueAtTime(frequency, startAt);
+
+  gain.gain.setValueAtTime(0.0001, startAt);
+  gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, stopAt);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(startAt);
+  osc.stop(stopAt + 0.02);
+}
+
+function playPlayerSound(player, type) {
+  if (!soundEnabled) return;
+  const ctx = ensureAudioContext();
+  if (!ctx || !player) return;
+
+  const idx = Math.max(0, players.indexOf(player));
+  const profile = PLAYER_SOUND_PROFILES[idx % PLAYER_SOUND_PROFILES.length];
+  const base = profile.base;
+  const wave = profile.wave;
+
+  if (type === 'turn') {
+    playTone(ctx, base, 0.08, wave, 0.08, 0);
+    playTone(ctx, base * 1.25, 0.09, wave, 0.07, 0.09);
+    return;
+  }
+
+  if (type === 'roll') {
+    playTone(ctx, base * 1.5, 0.07, wave, 0.09, 0);
+    playTone(ctx, base * 1.2, 0.08, wave, 0.08, 0.08);
+    return;
+  }
+
+  if (type === 'power') {
+    playTone(ctx, base * 1.8, 0.12, wave, 0.09, 0);
+    playTone(ctx, base * 1.35, 0.12, 'triangle', 0.07, 0.12);
+    return;
+  }
+
+  if (type === 'win') {
+    playTone(ctx, base, 0.12, wave, 0.1, 0);
+    playTone(ctx, base * 1.25, 0.12, wave, 0.1, 0.14);
+    playTone(ctx, base * 1.5, 0.12, wave, 0.1, 0.28);
+    playTone(ctx, base * 2, 0.2, wave, 0.11, 0.42);
+  }
+}
+
+function playSystemPing() {
+  if (!soundEnabled) return;
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+  playTone(ctx, 660, 0.08, 'triangle', 0.08, 0);
+  playTone(ctx, 880, 0.1, 'triangle', 0.07, 0.09);
+}
+
+soundBtn.addEventListener('click', async () => {
+  soundEnabled = !soundEnabled;
+  soundBtn.textContent = soundEnabled ? 'Sound: On' : 'Sound: Off';
+  if (soundEnabled) {
+    const ok = await unlockAudioFromGesture();
+    if (ok) playSystemPing();
+  }
+});
+
+document.addEventListener('pointerdown', () => {
+  unlockAudioFromGesture();
+}, { once: true });
 
 function renderNameFields() {
   const n = parseInt(numPlayersSelect.value);
   nameFields.innerHTML = '';
   for (let i = 0; i < n; i++) {
+    const defaultColor = PLAYER_COLOR_OPTIONS[i % PLAYER_COLOR_OPTIONS.length].value;
     const row = document.createElement('div');
     row.className = 'player-name-row';
+    const colorOptions = PLAYER_COLOR_OPTIONS.map(option => {
+      const selected = option.value === defaultColor ? 'selected' : '';
+      return `<option value="${option.value}" ${selected}>${option.name}</option>`;
+    }).join('');
     row.innerHTML = `
-      <span class="color-swatch" style="background:${PLAYER_COLORS[i]}"></span>
+      <select id="pcolor${i}" class="color-select" aria-label="Player ${i + 1} color">${colorOptions}</select>
+      <div class="pin-marker" id="ppin${i}" style="background:${defaultColor}" aria-hidden="true"><span>${i + 1}</span></div>
       <input type="text" id="pname${i}" placeholder="${PLAYER_NAMES_DEFAULT[i]}">
-      <select class="char-select" id="pchar${i}">
-        ${CHARACTERS.map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
     `;
     nameFields.appendChild(row);
-    // give each player a different default character
-    document.getElementById(`pchar${i}`).selectedIndex = i % CHARACTERS.length;
+    const colorSelect = document.getElementById(`pcolor${i}`);
+    const pinMarker = document.getElementById(`ppin${i}`);
+    colorSelect.addEventListener('change', () => {
+      pinMarker.style.background = colorSelect.value;
+    });
   }
 }
 numPlayersSelect.addEventListener('change', renderNameFields);
@@ -478,6 +671,7 @@ renderNameFields();
 
 function openSetup(mode) {
   playMode = mode;
+  ensureAudioContext();
   if (mode === 'computer') {
     landingScreen.classList.add('hidden');
     modeScreen.classList.add('hidden');
@@ -500,15 +694,17 @@ startBtn.addEventListener('click', () => {
   players = [];
   for (let i = 0; i < n; i++) {
     const input = document.getElementById(`pname${i}`);
-    const charSelect = document.getElementById(`pchar${i}`);
+    const colorInput = document.getElementById(`pcolor${i}`);
     const defaultName = playMode === 'computer' && i === 1 ? 'Computer' : PLAYER_NAMES_DEFAULT[i];
     const name = (input && input.value.trim()) || defaultName;
     const isComputerPlayer = playMode === 'computer' && i === 1;
-    const character = charSelect ? charSelect.value : CHARACTERS[i % CHARACTERS.length];
+    const selectedColor = colorInput
+      ? colorInput.value
+      : PLAYER_COLOR_OPTIONS[i % PLAYER_COLOR_OPTIONS.length].value;
     players.push({
       name,
-      color: PLAYER_COLORS[i],
-      character,
+      color: selectedColor,
+      character: '📍',
       position: 0,
       skipNext: false,
       isComputer: isComputerPlayer
@@ -523,6 +719,7 @@ startBtn.addEventListener('click', () => {
   updateTurnInfo();
   logDiv.innerHTML = '';
   addLog('Game started! Good luck to all players.');
+  playPlayerSound(players[currentPlayerIndex], 'turn');
 
   if (players[currentPlayerIndex].isComputer) {
     rollBtn.disabled = true;
@@ -558,12 +755,13 @@ function updateBoard(hopPlayer) {
     const t = document.getElementById(`tokens-${i}`);
     if (t) t.innerHTML = '';
   }
-  players.forEach((p) => {
+  players.forEach((p, index) => {
     const container = document.getElementById(`tokens-${p.position}`);
     if (container) {
       const tok = document.createElement('span');
-      tok.className = 'token';
-      tok.textContent = p.character;
+      tok.className = 'token pin-token';
+      tok.style.background = p.color;
+      tok.innerHTML = `<span>${index + 1}</span>`;
       tok.title = p.name;
       if (hopPlayer === p) tok.classList.add('hop');
       container.appendChild(tok);
@@ -610,6 +808,7 @@ async function runComputerTurn() {
   await sleep(900);
   const roll = Math.ceil(Math.random() * 6);
   diceDiv.textContent = roll;
+  playPlayerSound(player, 'roll');
   await handleMove(player, roll);
 }
 
@@ -635,6 +834,7 @@ async function applyTileEffect(player) {
     case 'red': {
       player.skipNext = true;
       const info = POWER_INFO.red;
+      playPlayerSound(player, 'power');
       addLog(`${player.character} ${player.name} landed on RED — will skip next turn!`);
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       await sleep(300);
@@ -643,6 +843,7 @@ async function applyTileEffect(player) {
     case 'blue': {
       const target = Math.min(player.position + 3, TOTAL_TILES - 1);
       const info = POWER_INFO.blue;
+      playPlayerSound(player, 'power');
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       await stepMove(player, target);
       addLog(`${player.character} ${player.name} landed on BLUE — boosted forward 3 to tile ${player.position}!`);
@@ -653,6 +854,7 @@ async function applyTileEffect(player) {
       const others = players.filter(p => p !== player);
       const swapWith = others[Math.floor(Math.random() * others.length)];
       const info = POWER_INFO.yellow;
+      playPlayerSound(player, 'power');
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player, swapWith.name)}`);
       const temp = player.position;
       player.position = swapWith.position;
@@ -665,6 +867,7 @@ async function applyTileEffect(player) {
     case 'green': {
       const target = Math.max(player.position - 2, 0);
       const info = POWER_INFO.green;
+      playPlayerSound(player, 'power');
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       await stepMove(player, target);
       addLog(`${player.character} ${player.name} landed on GREEN — slid back 2 to tile ${player.position}!`);
@@ -673,6 +876,7 @@ async function applyTileEffect(player) {
     }
     case 'purple': {
       const info = POWER_INFO.purple;
+      playPlayerSound(player, 'power');
       addLog(`${player.character} ${player.name} landed on PURPLE — rolls again!`);
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       rollAgain = true;
@@ -693,6 +897,7 @@ async function applyTileEffect(player) {
 function showWinner(player) {
   gameOver = true;
   rollBtn.disabled = true;
+  playPlayerSound(player, 'win');
   const overlay = document.createElement('div');
   overlay.id = 'winnerOverlay';
   overlay.innerHTML = `
@@ -707,6 +912,7 @@ function showWinner(player) {
 
 rollBtn.addEventListener('click', () => {
   if (gameOver) return;
+  ensureAudioContext();
   rollBtn.disabled = true;
   const player = players[currentPlayerIndex];
 
@@ -718,6 +924,7 @@ rollBtn.addEventListener('click', () => {
       clearInterval(rollInterval);
       const roll = Math.ceil(Math.random() * 6);
       diceDiv.textContent = roll;
+      playPlayerSound(player, 'roll');
       handleMove(player, roll);
     }
   }, 60);
@@ -754,6 +961,7 @@ async function handleMove(player, roll) {
   nextPlayer();
   updateTurnInfo();
   if (gameOver) return;
+  playPlayerSound(players[currentPlayerIndex], 'turn');
   if (players[currentPlayerIndex].isComputer) {
     rollBtn.disabled = true;
     setTimeout(runComputerTurn, 900);
