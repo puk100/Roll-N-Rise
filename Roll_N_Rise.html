@@ -223,10 +223,22 @@
   #game {
     display:none;
     width:100%;
-    max-width: 1100px;
+    max-width: 1240px;
     flex-direction: column;
     align-items:center;
     gap: 16px;
+  }
+  .game-main {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 18px;
+    align-items: start;
+  }
+  #sidePanel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .legend {
@@ -328,7 +340,7 @@
   }
 
   #controls {
-    margin-top: 18px;
+    margin-top: 0;
     background: var(--panel-strong);
     padding: 18px 24px 22px;
     border-radius: 24px;
@@ -338,7 +350,7 @@
     align-items: center;
     gap: 12px;
     width: 100%;
-    max-width: 560px;
+    max-width: none;
     border: 1px solid rgba(255,255,255,0.55);
   }
   #audioRow {
@@ -369,10 +381,10 @@
   }
   #log {
     width: 100%;
-    max-width: 560px;
+    max-width: none;
     background: rgba(255,255,255,0.88);
     border-radius: 18px;
-    margin-top: 4px;
+    margin-top: 0;
     padding: 12px 16px;
     max-height: 180px;
     overflow-y: auto;
@@ -422,6 +434,15 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+
+  @media (max-width: 760px) {
+    .game-main {
+      grid-template-columns: 1fr;
+    }
+    #sidePanel {
+      width: 100%;
+    }
+  }
 </style>
 </head>
 <body>
@@ -470,18 +491,22 @@
     <div><span class="swatch" style="background:var(--finish)"></span> Finish</div>
   </div>
 
-  <div id="board"></div>
+  <div class="game-main">
+    <div id="board"></div>
 
-  <div id="controls">
-    <div id="audioRow">
-      <button class="btn secondary-btn" id="soundBtn" type="button">Sound: On</button>
+    <div id="sidePanel">
+      <div id="controls">
+        <div id="audioRow">
+          <button class="btn secondary-btn" id="soundBtn" type="button">Sound: On</button>
+        </div>
+        <div id="turnInfo"></div>
+        <div id="dice">?</div>
+        <button class="btn" id="rollBtn">Roll Dice</button>
+      </div>
+
+      <div id="log"></div>
     </div>
-    <div id="turnInfo"></div>
-    <div id="dice">?</div>
-    <button class="btn" id="rollBtn">Roll Dice</button>
   </div>
-
-  <div id="log"></div>
 </div>
 
 <script>
