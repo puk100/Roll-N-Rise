@@ -629,6 +629,22 @@ function playSystemPing() {
   playTone(ctx, 880, 0.1, 'triangle', 0.07, 0.09);
 }
 
+function playDiceRollTick(step) {
+  if (!soundEnabled) return;
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+  const base = 300 + ((step % 4) * 25);
+  playTone(ctx, base, 0.03, 'square', 0.045, 0);
+}
+
+function playDiceLand() {
+  if (!soundEnabled) return;
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+  playTone(ctx, 240, 0.05, 'triangle', 0.07, 0);
+  playTone(ctx, 180, 0.07, 'triangle', 0.06, 0.04);
+}
+
 soundBtn.addEventListener('click', async () => {
   soundEnabled = !soundEnabled;
   soundBtn.textContent = soundEnabled ? 'Sound: On' : 'Sound: Off';
@@ -920,10 +936,12 @@ rollBtn.addEventListener('click', () => {
   const rollInterval = setInterval(() => {
     diceDiv.textContent = Math.ceil(Math.random() * 6);
     rollCount++;
+    if (rollCount % 2 === 0) playDiceRollTick(rollCount);
     if (rollCount > 8) {
       clearInterval(rollInterval);
       const roll = Math.ceil(Math.random() * 6);
       diceDiv.textContent = roll;
+      playDiceLand();
       playPlayerSound(player, 'roll');
       handleMove(player, roll);
     }
