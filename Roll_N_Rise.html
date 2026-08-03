@@ -177,16 +177,26 @@
     padding: 16px 18px;
     border: 1px solid rgba(35, 210, 255, 0.28);
     border-radius: 18px;
-    background: linear-gradient(180deg, rgba(8,20,42,0.86), rgba(11,26,51,0.8));
+    background: linear-gradient(180deg, rgba(14, 42, 86, 0.95), rgba(10, 28, 62, 0.92));
     cursor: pointer;
     text-align: left;
     transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    box-shadow: inset 0 0 18px rgba(66, 173, 255, 0.16), 0 10px 24px rgba(3, 14, 40, 0.36);
+  }
+  button.mode-card {
+    margin-top: 0;
+    background: linear-gradient(180deg, rgba(14, 42, 86, 0.95), rgba(10, 28, 62, 0.92));
+    color: #d8f4ff;
+    box-shadow: inset 0 0 18px rgba(66, 173, 255, 0.16), 0 10px 24px rgba(3, 14, 40, 0.36);
   }
   .mode-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(56, 235, 255, 0.62);
-    box-shadow: 0 0 28px rgba(0, 226, 255, 0.24);
-    background: linear-gradient(180deg, rgba(8,26,50,0.92), rgba(15,35,70,0.82));
+    border-color: rgba(106, 214, 255, 0.7);
+    box-shadow: 0 0 28px rgba(43, 147, 255, 0.26), 0 16px 30px rgba(2, 14, 35, 0.4);
+    background: linear-gradient(180deg, rgba(18, 54, 102, 0.96), rgba(11, 36, 77, 0.94));
+  }
+  button.mode-card:hover {
+    background: linear-gradient(180deg, rgba(18, 54, 102, 0.96), rgba(11, 36, 77, 0.94));
   }
   .mode-card strong {
     display: block;
@@ -199,7 +209,7 @@
     font-size: 13px;
     line-height: 1.5;
   }
-  #setup button, .btn {
+  #setup button:not(.mode-card), .btn {
     margin-top: 18px;
     padding: 12px 24px;
     background: linear-gradient(180deg, #00eaff, #00a6d8);
@@ -214,7 +224,7 @@
     position: relative;
     overflow: hidden;
   }
-  #setup button::before, .btn::before {
+  #setup button:not(.mode-card)::before, .btn::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -222,7 +232,7 @@
     transform: translateX(-130%);
     transition: transform 0.45s ease;
   }
-  #setup button:hover::before, .btn:hover::before {
+  #setup button:not(.mode-card):hover::before, .btn:hover::before {
     transform: translateX(130%);
   }
   .btn.secondary-btn {
@@ -234,12 +244,12 @@
     padding: 8px 14px;
     border-radius: 12px;
   }
-  #setup button:hover, .btn:hover {
+  #setup button:not(.mode-card):hover, .btn:hover {
     transform: translateY(-1px);
     filter: brightness(1.02);
     box-shadow: 0 0 24px rgba(0, 220, 255, 0.35), 0 14px 30px rgba(0, 142, 220, 0.4);
   }
-  #setup button:active, .btn:active { transform: translateY(0); }
+  #setup button:not(.mode-card):active, .btn:active { transform: translateY(0); }
 
   .player-name-row {
     display:flex;
