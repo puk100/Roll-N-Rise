@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Color Climb</title>
+<title>Roll N Rise</title>
 <style>
   :root {
     --normal: #eef1f5;
@@ -44,6 +44,36 @@
   #setup label { display:block; margin: 10px 0 4px; font-weight:600; }
   #setup select {
     padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; font-size:14px; width: 100%;
+  }
+  .mode-row {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .mode-card {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #d0d7e2;
+    border-radius: 12px;
+    background: #f8f9fb;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .mode-card:hover {
+    transform: translateY(-1px);
+    border-color: #4263eb;
+    box-shadow: 0 8px 20px rgba(66, 99, 235, 0.12);
+  }
+  .mode-card strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .mode-card span {
+    color: #5b6573;
+    font-size: 13px;
+    line-height: 1.4;
   }
   #setup button, .btn {
     margin-top: 18px;
@@ -231,15 +261,31 @@
 <div id="powerPopup"></div>
 
 <div id="setup">
-  <h2>Game Setup</h2>
-  <label for="numPlayers">Number of Players</label>
-  <select id="numPlayers">
-    <option value="2">2 Players</option>
-    <option value="3">3 Players</option>
-    <option value="4">4 Players</option>
-  </select>
-  <div id="nameFields"></div>
-  <button id="startBtn">Start Game</button>
+  <div id="landingScreen">
+    <h2>Start Game</h2>
+    <div class="mode-row">
+      <button class="mode-card" id="computerModeBtn" type="button">
+        <strong>Play with computer</strong>
+        <span>One player against a computer-controlled opponent.</span>
+      </button>
+      <button class="mode-card" id="friendsModeBtn" type="button">
+        <strong>Play with friends</strong>
+        <span>Add player names, then start a local multiplayer game.</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="modeScreen" class="hidden">
+    <h2>Game Setup</h2>
+    <label for="numPlayers">Number of Players</label>
+    <select id="numPlayers">
+      <option value="2">2 Players</option>
+      <option value="3">3 Players</option>
+      <option value="4">4 Players</option>
+    </select>
+    <div id="nameFields"></div>
+    <button id="startBtn">Start Game</button>
+  </div>
 </div>
 
 <div id="game">
@@ -288,10 +334,15 @@ const POWER_INFO = {
 let players = [];
 let currentPlayerIndex = 0;
 let gameOver = false;
+let playMode = 'friends';
 
+const landingScreen = document.getElementById('landingScreen');
+const modeScreen = document.getElementById('modeScreen');
 const numPlayersSelect = document.getElementById('numPlayers');
 const nameFields = document.getElementById('nameFields');
 const startBtn = document.getElementById('startBtn');
+const computerModeBtn = document.getElementById('computerModeBtn');
+const friendsModeBtn = document.getElementById('friendsModeBtn');
 const setupDiv = document.getElementById('setup');
 const gameDiv = document.getElementById('game');
 const boardDiv = document.getElementById('board');
@@ -322,19 +373,42 @@ function renderNameFields() {
 numPlayersSelect.addEventListener('change', renderNameFields);
 renderNameFields();
 
+function openSetup(mode) {
+  playMode = mode;
+  if (mode === 'computer') {
+    landingScreen.classList.add('hidden');
+    modeScreen.classList.add('hidden');
+    numPlayersSelect.value = '2';
+    nameFields.innerHTML = '';
+    startBtn.click();
+  } else {
+    landingScreen.classList.add('hidden');
+    numPlayersSelect.value = '2';
+    modeScreen.classList.remove('hidden');
+    renderNameFields();
+  }
+}
+
+computerModeBtn.addEventListener('click', () => openSetup('computer'));
+friendsModeBtn.addEventListener('click', () => openSetup('friends'));
+
 startBtn.addEventListener('click', () => {
   const n = parseInt(numPlayersSelect.value);
   players = [];
   for (let i = 0; i < n; i++) {
     const input = document.getElementById(`pname${i}`);
     const charSelect = document.getElementById(`pchar${i}`);
-    const name = (input.value.trim()) || PLAYER_NAMES_DEFAULT[i];
+    const defaultName = playMode === 'computer' && i === 1 ? 'Computer' : PLAYER_NAMES_DEFAULT[i];
+    const name = (input && input.value.trim()) || defaultName;
+    const isComputerPlayer = playMode === 'computer' && i === 1;
+    const character = charSelect ? charSelect.value : CHARACTERS[i % CHARACTERS.length];
     players.push({
       name,
       color: PLAYER_COLORS[i],
-      character: charSelect.value,
+      character,
       position: 0,
-      skipNext: false
+      skipNext: false,
+      isComputer: isComputerPlayer
     });
   }
   currentPlayerIndex = 0;
@@ -346,6 +420,11 @@ startBtn.addEventListener('click', () => {
   updateTurnInfo();
   logDiv.innerHTML = '';
   addLog('Game started! Good luck to all players.');
+
+  if (players[currentPlayerIndex].isComputer) {
+    rollBtn.disabled = true;
+    setTimeout(runComputerTurn, 900);
+  }
 });
 
 function buildBoard() {
@@ -392,7 +471,8 @@ function updateBoard(hopPlayer) {
 function updateTurnInfo() {
   if (gameOver) return;
   const p = players[currentPlayerIndex];
-  turnInfo.innerHTML = `<span class="color-dot" style="background:${p.color}"></span>${p.character} ${p.name}'s turn (tile ${p.position})`;
+  const label = p.isComputer ? `${p.character} ${p.name} (computer)` : `${p.character} ${p.name}`;
+  turnInfo.innerHTML = `<span class="color-dot" style="background:${p.color}"></span>${label}'s turn (tile ${p.position})`;
 }
 
 function addLog(msg) {
@@ -417,6 +497,17 @@ function nextPlayer() {
     players[currentPlayerIndex].skipNext = false;
     currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
   }
+}
+
+async function runComputerTurn() {
+  if (gameOver) return;
+  const player = players[currentPlayerIndex];
+  if (!player || !player.isComputer) return;
+  addLog(`${player.character} ${player.name} is thinking...`);
+  await sleep(900);
+  const roll = Math.ceil(Math.random() * 6);
+  diceDiv.textContent = roll;
+  await handleMove(player, roll);
 }
 
 // Sleep helper
@@ -550,12 +641,22 @@ async function handleMove(player, roll) {
 
   if (rollAgain) {
     rollBtn.disabled = false;
+    if (players[currentPlayerIndex].isComputer) {
+      rollBtn.disabled = true;
+      setTimeout(runComputerTurn, 900);
+    }
     return;
   }
 
   nextPlayer();
   updateTurnInfo();
-  rollBtn.disabled = false;
+  if (gameOver) return;
+  if (players[currentPlayerIndex].isComputer) {
+    rollBtn.disabled = true;
+    setTimeout(runComputerTurn, 900);
+  } else {
+    rollBtn.disabled = false;
+  }
 }
 </script>
 </body>
