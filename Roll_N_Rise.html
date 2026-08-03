@@ -1192,7 +1192,7 @@ function showPowerPopup(text) {
   clearTimeout(showPowerPopup._t);
   showPowerPopup._t = setTimeout(() => {
     powerPopup.classList.remove('show');
-  }, 2200);
+  }, 3800);
 }
 
 function nextPlayer() {
@@ -1242,7 +1242,7 @@ async function applyTileEffect(player) {
       playPlayerSound(player, 'power');
       addLog(`${player.character} ${player.name} landed on RED — will skip next turn!`);
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
-      await sleep(300);
+      await sleep(900);
       break;
     }
     case 'blue': {
@@ -1252,7 +1252,7 @@ async function applyTileEffect(player) {
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       await stepMove(player, target);
       addLog(`${player.character} ${player.name} landed on BLUE — boosted forward 3 to tile ${player.position}!`);
-      await sleep(200);
+      await sleep(900);
       break;
     }
     case 'yellow': {
@@ -1266,7 +1266,7 @@ async function applyTileEffect(player) {
       swapWith.position = temp;
       updateBoard(player);
       addLog(`${player.character} ${player.name} landed on YELLOW — swapped places with ${swapWith.character} ${swapWith.name}!`);
-      await sleep(300);
+      await sleep(900);
       break;
     }
     case 'green': {
@@ -1276,7 +1276,7 @@ async function applyTileEffect(player) {
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       await stepMove(player, target);
       addLog(`${player.character} ${player.name} landed on GREEN — slid back 2 to tile ${player.position}!`);
-      await sleep(200);
+      await sleep(900);
       break;
     }
     case 'purple': {
@@ -1285,7 +1285,7 @@ async function applyTileEffect(player) {
       addLog(`${player.character} ${player.name} landed on PURPLE — rolls again!`);
       showPowerPopup(`${info.icon} ${info.label} — ${info.desc(player)}`);
       rollAgain = true;
-      await sleep(300);
+      await sleep(900);
       break;
     }
     case 'finish': {
